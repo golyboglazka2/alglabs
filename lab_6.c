@@ -20,6 +20,31 @@ int FindMax(int n, int a[])
     return max;
 }
 
+int FindMin(int n, int a[])
+{
+    int min = a[0]+a[1];
+    for (int i = 0; i < n-1; i++)
+    {
+        if (a[i] < min)
+            min = i;
+        //printf("maxpr = %d\n", max);
+    }
+    return min;
+}
+
+int FindMin2(int n, int a[], int number)
+{
+    int min = a[0]+a[1];
+    for (int i = 0; i < n-1; i++)
+    {
+        if ((a[i] < min) & (i != number))
+            min = i;
+        //printf("maxpr = %d\n", max);
+    }
+    return min;
+}
+
+/*
 void FindMin(int n, int a[])
 {
     int t;
@@ -34,16 +59,12 @@ void FindMin(int n, int a[])
                 a[j + 1] = t;
             }
         }
-        //if (i%(n/50)==0)
-        //{
-        //printf("*");
-        //fflush(stdout);
-        //}
     }
     printf("\n");//
 }
+*/
 
-void outM(int A[], int n)//выыод одномерных массивов
+void outM(int A[], int n)//вывод одномерных массивов
 {
     int i;
     for(i = 0; i < n; i++){
@@ -63,9 +84,11 @@ void outM(int A[], int n)//выыод одномерных массивов
      fill (n, A);
      outM (A, n);
      int max = FindMax(n, A);
-     FindMin(n, A);
+     int number1 = FindMin(n, A);
+     int number2 = FindMin2(n, A, number1);
      //outM (A, n);
-     int sum = max + A[0] +A[1];
-     printf("min1 = %d\nmin2 = %d\nmax = %d\nsum = %d\n", A[0], A[1], max, sum);
+     //int sum = max + A[0] +A[1];
+
+     printf("min1 = %d\nmin2 = %d\nmax = %d\n", A[0], A[1], max);
      return 0;
  }
