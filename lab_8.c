@@ -33,18 +33,18 @@ int main()
                     a = mygetch();
                     if (a == 50)
                     {
-                        printf("\x1B[31m\x1B[0m\n");
+                        printf("\x1B[31mЗакрой за мной дверь,\nЯ ухожу\x1B[0m\n");
                         return 0;
                     }
                     else
                     {
-                        printf("\x1B[35m\x1B[0m ");
+                        printf("\x1B[35mАбоба\x1B[0m ");
                         continue;
                     }
                 }
                 else
                 {
-                    printf("\x1B[35m\x1B[0m ");
+                    printf("\x1B[35mАбоба\x1B[0m ");
                     continue;
                 }
             }
