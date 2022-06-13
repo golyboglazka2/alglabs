@@ -2,24 +2,13 @@
 #include <string.h>
 #include <ctype.h>
 #include <time.h>
+#include <termios.h>
+#include <unistd.h>
 
-/*
-typedef struct hot
-{
-  int status;
-  char name[20];
-  int stars;
-  char addr[60];
-  int number;
-  int countRooms;
-  int countLuxRooms;
-  int freeRooms;
-} hotel;
-*/
 
 typedef struct buses
 {
-    int     status;//existing or not
+    int     status;//existing(1) or not(0)
     int     BusNumber;
     char    ArivalCity [32];
     char    DepatureCity [32];
@@ -39,6 +28,16 @@ void TimePrint(time_t bufer)
 }
 
 
+void TimeDelta(time_t bufer)
+{
+    struct tm* TimeInf = localtime(&bufer);
+    printf("%02d:%02d %02d-%02d-%04d", 
+    TimeInf-> tm_hour, TimeInf -> tm_min, 
+    TimeInf -> tm_mday-1, TimeInf -> tm_mon, 
+    TimeInf -> tm_year-70);
+}
+
+
 time_t TimeScan()
 {
     time_t bufer = time(NULL);
@@ -49,7 +48,7 @@ time_t TimeScan()
     &TimeInf -> tm_year);
     TimeInf -> tm_mon = TimeInf -> tm_mon - 1;
     TimeInf -> tm_year = TimeInf -> tm_year - 1900;
-    bufer = mktime(&TimeInf);
+    bufer = mktime(TimeInf);
     return bufer;
 }
 
@@ -68,23 +67,23 @@ void fill(int n, bus *BusNumber)
   {
       if (k != n)
       {
-          if (!BusNumber[i].status)//name should not be BusNumber
+          if (!BusNumber[i].status)
           {
               memset(AC, 0, sizeof(AC));
               memset(DC, 0, sizeof(DC));
               BusNumber[i].status = 1;
 
-              printf("Enter BusNumber");
+              printf("Enter BusNumber: ");
               scanf("%d", &BusNumber[i].BusNumber);
 
               printf("Enter depature city: ");
-              scanf("%s", &DC);
+              scanf("%s", DC);
               for (int t = 0; t < 32; t++)
                   DC[t] = tolower(DC[t]);
               strcpy(BusNumber[i].DepatureCity, DC);
 
-              printf("Enter arrival city: ");//was name will ArivalCity but only this
-              scanf("%s", &AC);
+              printf("Enter arrival city: ");
+              scanf("%s", AC);
               for (int t = 0; t < 32; t++)
                   AC[t] = tolower(AC[t]);
               strcpy(BusNumber[i].ArivalCity, AC);
@@ -109,21 +108,18 @@ void fill(int n, bus *BusNumber)
   }
 }
 
-void remove_bus(int n, bus *BusNumber)
-{
-    BusNumber[n].status = 0;
-}
 
 void printBus(int n, bus *BusNumber)
 {
+    time_t bufer;
     for (int i = 0; i < n; i++)
     {
         if (BusNumber[i].status)
         {
             printf("\n");
             printf("Number: %d\n", BusNumber[i].BusNumber);
-            printf("Depature city: %s", BusNumber[i].DepatureCity);
-            printf("Arival city: %s", BusNumber[i].ArivalCity);
+            printf("Depature city: %s\n", BusNumber[i].DepatureCity);
+            printf("Arival city: %s\n", BusNumber[i].ArivalCity);
             printf("Depature time: ");
             TimePrint(BusNumber[i].DepatureTime);
             printf("\n");
@@ -131,118 +127,156 @@ void printBus(int n, bus *BusNumber)
             TimePrint(BusNumber[i].ArivalTime);
             printf("\n");
             printf("travel time: ");
-            time_t bufer = BusNumber[i].ArivalTime - BusNumber[i].DepatureTime;
-            TimePrint(bufer);
+            bufer = BusNumber[i].ArivalTime - BusNumber[i].DepatureTime;
+            TimeDelta(bufer);
             printf("\n");
-            time_t bufer = time(NULL);
+            bufer = time(NULL);
             if (bufer > BusNumber[i].DepatureTime)
             {
                 printf("\x1B[31mYou late on");
-                TimePrint(bufer - BusNumber[i].DepatureTime);
+                TimeDelta(bufer - BusNumber[i].DepatureTime);
                 printf("\x1B[0m\n");
             }
             else
             {
                 printf("\x1B[32mThere is ");
-                TimePrint(BusNumber[i].DepatureTime - bufer);
+                TimeDelta(BusNumber[i].DepatureTime - bufer);
                 printf(" before depature\x1B[0m\n");
             }
-            printf("There is %d seats in the bus, %d is free", BusNumber[i].SeatCount, BusNumber[i].SeatCount - BusNumber[i].OccupedSeats);
+            printf("There is %d seats in the bus, %d is free\n", BusNumber[i].AllSeats, BusNumber[i].AllSeats - BusNumber[i].OccupedSeats);
         }
     }
 }
 
-void bestHotel(int n, hotel *name)
+
+void BusTo(int n, bus *BusNumber, char *AC)
 {
-    struct hot bestHotels[n];
-    int bestStars = 5, i, countBest = 0, maxFreeRooms;
-    for (i = 0; i <= n; i++)
-        if (name[i].stars == bestStars && name[i].status != 0)
-        {
-            if (name[i].stars == bestStars)
-            {
-                bestHotels[countBest] = name[i];
-                countBest++;
-            }
-            if (i == n && countBest == 0){
-                i = 0;
-                bestStars--;
-            }
-        }
-    maxFreeRooms = bestHotels[1].freeRooms;
-    int indexOfMax = 0;
-    for (i = 0; i < countBest; i++)
+    time_t bufer;
+    for (int i = 0; i < n; i++)
     {
-        if (maxFreeRooms < bestHotels[i].freeRooms){
-            maxFreeRooms = bestHotels[i].freeRooms;
-            indexOfMax = i;
+        if (BusNumber[i].status && BusNumber[i].ArivalCity == AC)
+        {
+            printf("\n");
+            printf("Number: %d\n", BusNumber[i].BusNumber);
+            printf("Depature city: %s\n", BusNumber[i].DepatureCity);
+            printf("Arival city: %s\n", BusNumber[i].ArivalCity);
+            printf("Depature time: ");
+            TimePrint(BusNumber[i].DepatureTime);
+            printf("\n");
+            printf("Arival time: ");
+            TimePrint(BusNumber[i].ArivalTime);
+            printf("\n");
+            printf("travel time: ");
+            bufer = BusNumber[i].ArivalTime - BusNumber[i].DepatureTime;
+            TimeDelta(bufer);
+            printf("\n");
+            bufer = time(NULL);
+            if (bufer > BusNumber[i].DepatureTime)
+            {
+                printf("\x1B[31mYou late on");
+                TimeDelta(bufer - BusNumber[i].DepatureTime);
+                printf("\x1B[0m\n");
+            }
+            else
+            {
+                printf("\x1B[32mThere is ");
+                TimeDelta(BusNumber[i].DepatureTime - bufer);
+                printf(" before depature\x1B[0m\n");
+            }
+            printf("There is %d seats in the bus, %d is free", BusNumber[i].AllSeats, BusNumber[i].AllSeats - BusNumber[i].OccupedSeats);
         }
     }
-    printf("%s %d %s %d %d %d %d\n", bestHotels[indexOfMax].name, bestHotels[indexOfMax].stars, bestHotels[indexOfMax].addr, bestHotels[indexOfMax].number, bestHotels[indexOfMax].countRooms, bestHotels[indexOfMax].countLuxRooms, bestHotels[indexOfMax].freeRooms);
 }
 
-void read_hotel(int n, hotel *name)
+
+
+void read_bus(int n, bus *BusNumber)
 {
-    FILE* hotel_list = fopen("hotel_list.txt", "r");
-    if (hotel_list == NULL)
-        printf("Файла со списком магазинов не существует\n");
+    FILE* bus_list = fopen("bus_list.txt", "r");
+    if (bus_list == NULL)
+        printf("\x1B[31mfile not exist\x1B[0m\n");
     else
     {
         for(int i = 0; i < n; i++)
-            fscanf(hotel_list, "%d %s %d %s %d %d %d %d\n", &name[i].status, name[i].name, &name[i].stars, name[i].addr, &name[i].number, &name[i].countRooms, &name[i].countLuxRooms, &name[i].freeRooms);
-        fclose(hotel_list);
+            fscanf(bus_list, "%ls %ls %s %s %ln %ln %ls %ls\n", 
+            &BusNumber[i].status, &BusNumber[i].BusNumber, 
+            BusNumber[i].ArivalCity, BusNumber[i].DepatureCity, 
+            &BusNumber[i].ArivalTime, &BusNumber[i].DepatureTime, 
+            &BusNumber[i].AllSeats, &BusNumber[i].OccupedSeats);
+        fclose(bus_list);
     }
 }
 
-void write_hotel(int n, hotel *name)
+void write_bus(int n, bus *BusNumber)
 {
-    FILE* hotel_list = fopen("hotel_list.txt", "w");
+    FILE* bus_list = fopen("bus_list.txt", "w");
     for (int i = 0; i < n; i++)
     {
-        if (name[i].status)
-        fprintf(hotel_list, "%d %s %d %s %d %d %d %d\n", name[i].status, name[i].name, name[i].stars, name[i].addr, name[i].number, name[i].countRooms, name[i].countLuxRooms, name[i].freeRooms);
+        if (BusNumber[i].status)
+        fprintf(bus_list, "%ls %ls %s %s %ln %ln %ls %ls\n", 
+        &BusNumber[i].status, &BusNumber[i].BusNumber, 
+        BusNumber[i].ArivalCity, BusNumber[i].DepatureCity, 
+        &BusNumber[i].ArivalTime, &BusNumber[i].DepatureTime, 
+        &BusNumber[i].AllSeats, &BusNumber[i].OccupedSeats);
     }
-    fclose(hotel_list);
+    fclose(bus_list);
 }
+
+
+void removeBus (int n, int number, bus *BusNumber)
+{
+    for (int i = 0; i < n; i++)
+    {
+        if (BusNumber[i].BusNumber == number)
+            BusNumber[i].status = 0;
+    }
+}
+
 
 int main()
 {
-  int n = 10, l = 0;
+  int n = 10, l = -1;
   char c;
+  char AC[32];
   bus test[n];
   init_bus(n, test);
   read_bus(n, test);
   while(c != 'e')
   {
-      printf("\n");
-      printf("Choose? n - add hotel, ");
-      printf("d - delete hotel, s - search best hotel with free rooms, ");
-      printf("p - print hotels, e - exit ");
-      printf("\n");
-      scanf("%s", &c);
+      printf("\n Choose Action:\n");
+      printf("P - print all buses\n");
+      printf("N - Add a new bus\n");
+      printf("D - Remove a bus\n");
+      printf("T - Print all busesin some direction\n");
+      printf("E - Exit the program\n");
+      scanf("%c", &c);
       switch(c)
-      {
-              case 'p':
-                  printstr(n,test);
+       {
+              case 'p'://вывести все
+                  printBus(n,test);
                   break;
-              case 'n':
+              case 'n'://новый
                   fill(n,test);
                   break;
-              case 'd':
-                  printf("Choose number: \n");
+              case 'd'://удалить
+                  printf("Choose bus number: \n");
                   scanf("%d", &l);
-                  remove_hotel(l,test);
+                  removeBus(n, l, test);
+                  printf("\x1B[31mDelited\x1B[0m\n");
                   break;
-              case 's':
-                  bestHotel(n, test);
-                  break;
-              case 'e':
+              case 't'://все в направлении
+                  printf("Enter arival city: \n");
+                  memset(AC, 0, sizeof(AC));
+                  scanf("%s", AC);
+                    for (int t = 0; t < 32; t++)
+                        AC[t] = tolower(AC[t]);
+                  BusTo(n, test, AC);
                   break;
               default:
-                  printf("Wrong key\n");
+                  printf("\x1B[31mWrong key\x1B[0m\n");
                   break;
-      }
-  }
-  write_hotel(n, test);
-  return 0;
+        }
+    }
+    write_bus(n, test);
+    return 0;
 }
