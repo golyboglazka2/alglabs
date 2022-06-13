@@ -29,8 +29,9 @@ typedef struct buses
     int     OccupedSeats;
 }bus;
 
-void TimePrint(struct tm* TimeInf)
+void TimePrint(time_t bufer)
 {
+    struct tm* TimeInf = localtime(&bufer);
     printf("%02d:%02d %02d-%02d-%04d", 
     TimeInf-> tm_hour, TimeInf -> tm_min, 
     TimeInf -> tm_mday, TimeInf -> tm_mon+1, 
@@ -38,14 +39,18 @@ void TimePrint(struct tm* TimeInf)
 }
 
 
-void TimeScan(struct tm* TimeInf)
+time_t TimeScan()
 {
+    time_t bufer = time(NULL);
+    struct tm *TimeInf = localtime(&bufer);
     scanf("%02d:%02d %02d-%02d-%04d", 
     &TimeInf -> tm_hour, &TimeInf -> tm_min, 
     &TimeInf -> tm_mday, &TimeInf -> tm_mon, 
     &TimeInf -> tm_year);
     TimeInf -> tm_mon = TimeInf -> tm_mon - 1;
     TimeInf -> tm_year = TimeInf -> tm_year - 1900;
+    bufer = mktime(&TimeInf);
+    return bufer;
 }
 
 void init_bus(int n, bus *BusNumber)//intializes the buses by giving 0 status for all 
@@ -59,8 +64,6 @@ void fill(int n, bus *BusNumber)
   char AC[32];
   char DC[32];
   int k = 0;
-  time_t init = time(NULL);
-  struct tm* BufTime = localtime(&init);
   for (int i = 0; i < n; i++)
   {
       if (k != n)
@@ -87,12 +90,10 @@ void fill(int n, bus *BusNumber)
               strcpy(BusNumber[i].ArivalCity, AC);
 
               printf("Enter depature time[HH:MM DD-MM-YYYY]: ");
-              TimeScan(BufTime);
-              BusNumber[i].DepatureTime = mktime(BufTime);
+              BusNumber[i].DepatureTime =TimeScan();
               
               printf("Enter arrival time[HH:MM DD-MM-YYYY]: ");
-              TimeScan(BufTime);
-              BusNumber[i].ArivalTime = mktime(BufTime);
+              BusNumber[i].ArivalTime = TimeScan();
 
               printf("Enter count of seets: ");
               scanf("%d", &BusNumber[i].AllSeats);
@@ -108,25 +109,45 @@ void fill(int n, bus *BusNumber)
   }
 }
 
-void remove_hotel(int n, hotel *BusNumber)
+void remove_bus(int n, bus *BusNumber)
 {
-    name[n].status = 0;
+    BusNumber[n].status = 0;
 }
 
-void printstr(int n, hotel *name)
+void printBus(int n, bus *BusNumber)
 {
     for (int i = 0; i < n; i++)
     {
-        if (name[i].status)
+        if (BusNumber[i].status)
         {
             printf("\n");
-            printf("Name%d = %s\n", i, name[i].name);
-            printf("Stars%d = %d\n", i, name[i].stars);
-            printf("Addres%d = %s\n", i, name[i].addr);
-            printf("Number%d = %d\n", i, name[i].number);
-            printf("Count of rooms%d = %d\n", i, name[i].countRooms);
-            printf("Count of lux rooms%d = %d\n", i, name[i].countLuxRooms);
-            printf("Count of free rooms%d = %d\n", i, name[i].freeRooms);
+            printf("Number: %d\n", BusNumber[i].BusNumber);
+            printf("Depature city: %s", BusNumber[i].DepatureCity);
+            printf("Arival city: %s", BusNumber[i].ArivalCity);
+            printf("Depature time: ");
+            TimePrint(BusNumber[i].DepatureTime);
+            printf("\n");
+            printf("Arival time: ");
+            TimePrint(BusNumber[i].ArivalTime);
+            printf("\n");
+            printf("travel time: ");
+            time_t bufer = BusNumber[i].ArivalTime - BusNumber[i].DepatureTime;
+            TimePrint(bufer);
+            printf("\n");
+            time_t bufer = time(NULL);
+            if (bufer > BusNumber[i].DepatureTime)
+            {
+                printf("\x1B[31mYou late on");
+                TimePrint(bufer - BusNumber[i].DepatureTime);
+                printf("\x1B[0m\n");
+            }
+            else
+            {
+                printf("\x1B[32mThere is ");
+                TimePrint(BusNumber[i].DepatureTime - bufer);
+                printf(" before depature\x1B[0m\n");
+            }
+            printf("There is %d seats in the bus, %d is free", BusNumber[i].SeatCount, BusNumber[i].SeatCount - BusNumber[i].OccupedSeats);
         }
     }
 }
