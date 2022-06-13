@@ -214,10 +214,10 @@ void write_bus(int n, bus *BusNumber)
     {
         if (BusNumber[i].status)
         fprintf(bus_list, "%ls %ls %s %s %ln %ln %ls %ls\n", 
-        &BusNumber[i].status, &BusNumber[i].BusNumber, 
+        BusNumber[i].status, BusNumber[i].BusNumber, 
         BusNumber[i].ArivalCity, BusNumber[i].DepatureCity, 
-        &BusNumber[i].ArivalTime, &BusNumber[i].DepatureTime, 
-        &BusNumber[i].AllSeats, &BusNumber[i].OccupedSeats);
+        BusNumber[i].ArivalTime, BusNumber[i].DepatureTime, 
+        BusNumber[i].AllSeats, BusNumber[i].OccupedSeats);
     }
     fclose(bus_list);
 }
