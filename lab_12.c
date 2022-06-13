@@ -32,7 +32,7 @@ void TimeDelta(time_t bufer)
 {
     struct tm* TimeInf = localtime(&bufer);
     printf("%02d:%02d %02d-%02d-%04d", 
-    TimeInf-> tm_hour, TimeInf -> tm_min, 
+    TimeInf-> tm_hour-5, TimeInf -> tm_min, 
     TimeInf -> tm_mday-1, TimeInf -> tm_mon, 
     TimeInf -> tm_year-70);
 }
@@ -213,7 +213,7 @@ void write_bus(int n, bus *BusNumber)
     for (int i = 0; i < n; i++)
     {
         if (BusNumber[i].status)
-        fprintf(bus_list, "%ls %ls %s %s %ln %ln %ls %ls\n", 
+        fprintf(bus_list, "%d %d %s %s %ld %ld %d %d\n", 
         BusNumber[i].status, BusNumber[i].BusNumber, 
         BusNumber[i].ArivalCity, BusNumber[i].DepatureCity, 
         BusNumber[i].ArivalTime, BusNumber[i].DepatureTime, 
@@ -236,7 +236,7 @@ void removeBus (int n, int number, bus *BusNumber)
 int main()
 {
   int n = 10, l = -1;
-  char c;
+  char c = '\0';
   char AC[32];
   bus test[n];
   init_bus(n, test);
